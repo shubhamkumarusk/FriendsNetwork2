@@ -15,6 +15,7 @@ import android.view.Window
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.Toast
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -25,6 +26,7 @@ import com.example.friendsnetwork.adapters.CommentsAdapter
 import com.example.friendsnetwork.adapters.FeedAdapter
 import com.example.friendsnetwork.adapters.onClickHandel
 import com.example.friendsnetwork.databinding.FragmentHomeBinding
+import com.example.friendsnetwork.models.CommentModel
 import com.example.friendsnetwork.models.PostsModel
 import com.example.friendsnetwork.retrofit.RetrofitHelper
 import com.example.friendsnetwork.retrofit.RetrofitServices
@@ -114,27 +116,37 @@ class HomeFragment : Fragment(), onClickHandel {
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE)
         dialog.setContentView(R.layout.comment_box)
         val recyclerView = dialog.findViewById<RecyclerView>(R.id.comment_recyclerView)
-        val commentEditText = dialog.findViewById<EditText>(androidx.core.R.id.edit_text_id)
+        val commentEditText = dialog.findViewById<EditText>(R.id.comment_etv)
         val sendButton = dialog.findViewById<ImageView>(R.id.send_button)
         val commentAdapter = CommentsAdapter()
 
         recyclerView.adapter = commentAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        commentAdapter.submitList(post.comment)
-        Log.d("posts Comment",post.comment.toString())
+        commentAdapter.submitList(post.comments)
+        Log.d("posts Comment",post.comments.toString())
+
         sendButton.setOnClickListener {
             val comment = commentEditText.text.toString()
             val map = HashMap<String,String>()
             map["email"] = email!!
             map["text"] = comment
-            api.addCommentToPost(post.postId,map).enqueue(object :Callback<Void>{
+            api.addCommentToPost(post.postId,map).enqueue(object :Callback<CommentModel>{
 
-                override fun onResponse(call: Call<Void>, response: Response<Void>) {
-
+                override fun onResponse(
+                    call: Call<CommentModel>,
+                    response: Response<CommentModel>
+                ) {
+                    val newComment = response.body()
+                    val updatedComment = post.comments?.toMutableList()
+                    updatedComment?.add(newComment!!)
+                    post.comments = updatedComment
+                    commentAdapter.submitList(updatedComment)
+                    commentAdapter.notifyDataSetChanged()
+                    commentEditText.text = null
                 }
 
-                override fun onFailure(call: Call<Void>, t: Throwable) {
-
+                override fun onFailure(call: Call<CommentModel>, t: Throwable) {
+                    Toast.makeText(requireContext(),"${t.message}",Toast.LENGTH_LONG).show()
                 }
 
             })
@@ -144,8 +156,6 @@ class HomeFragment : Fragment(), onClickHandel {
         dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,ViewGroup.LayoutParams.WRAP_CONTENT)
         dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
         dialog.window?.setGravity(Gravity.BOTTOM)
-
-
     }
 
 

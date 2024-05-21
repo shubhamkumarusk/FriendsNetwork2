@@ -1,5 +1,6 @@
 package com.example.friendsnetwork.retrofit
 
+import com.example.friendsnetwork.models.CommentModel
 import com.example.friendsnetwork.models.PostsModel
 import com.example.friendsnetwork.models.UserLoginModel
 import com.example.friendsnetwork.models.UsersModel
@@ -36,6 +37,6 @@ interface RetrofitServices {
     fun PostFeed(@Body map:HashMap<String,String>):Call<Void>
 
     @POST("/{id}/comment")
-    fun addCommentToPost(@Path("id") id:String,@Body map:HashMap<String,String>):Call<Void>
+    fun addCommentToPost(@Path("id") id:String,@Body map:HashMap<String,String>):Call<CommentModel>
 
 }

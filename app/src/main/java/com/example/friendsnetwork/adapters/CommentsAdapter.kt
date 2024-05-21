@@ -5,6 +5,8 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
+import com.example.friendsnetwork.R
 import com.example.friendsnetwork.databinding.CommentListBinding
 import com.example.friendsnetwork.databinding.FragmentPersonalFeedBinding
 import com.example.friendsnetwork.models.CommentModel
@@ -28,7 +30,15 @@ class CommentsAdapter:ListAdapter<CommentModel,CommentsAdapter.CommentsViewHolde
     }
     class CommentsViewHolder(val binding: CommentListBinding):RecyclerView.ViewHolder(binding.root){
         fun bind(comment:CommentModel){
-            binding.comment.text = comment.comment
+            binding.comment.text = comment.text
+            if(comment.user!=null){
+                Glide.with(itemView.context)
+                    .load(comment.user.profilePic)
+                    .centerCrop()
+                    .placeholder(R.drawable.profile)
+                    .into(binding.dpImage)
+                binding.userNameCmt.text =  comment.user.name
+            }
         }
     }
 
