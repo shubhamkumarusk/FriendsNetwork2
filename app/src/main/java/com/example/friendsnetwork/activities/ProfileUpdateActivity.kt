@@ -1,6 +1,5 @@
 package com.example.friendsnetwork.activities
 
-
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
@@ -8,11 +7,8 @@ import android.net.Uri
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.util.Log
 import android.widget.Toast
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
@@ -20,6 +16,8 @@ import com.example.friendsnetwork.R
 import com.example.friendsnetwork.SHARE_PREF_EMAIL
 import com.example.friendsnetwork.SHARE_PREF_NAME
 import com.example.friendsnetwork.databinding.ActivityProfileSetUpBinding
+import com.example.friendsnetwork.databinding.ActivityProfileUpdateBinding
+import com.example.friendsnetwork.fragments.ProfileFragment
 import com.example.friendsnetwork.models.UsersModel
 import com.example.friendsnetwork.retrofit.RetrofitHelper
 import com.example.friendsnetwork.retrofit.RetrofitServices
@@ -27,29 +25,43 @@ import com.example.friendsnetwork.viewmodel.UsersViewModel
 import com.example.friendsnetwork.viewmodel.viewModelFactory
 import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
-import java.io.IOException
 
-class ProfileSetUpActivity : AppCompatActivity() {
-
+class ProfileUpdateActivity : AppCompatActivity() {
     private val api = RetrofitHelper.getInstance().create(RetrofitServices::class.java)
-    private lateinit var viewModel:UsersViewModel
+    private lateinit var viewModel: UsersViewModel
     private var mImageUri: Uri? = null
     private lateinit var storageRef: StorageReference
-    lateinit var binding: ActivityProfileSetUpBinding
+    lateinit var binding: ActivityProfileUpdateBinding
     private lateinit var base64:String
     private var profilePic:String? = null
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityProfileSetUpBinding.inflate(layoutInflater)
+        binding = ActivityProfileUpdateBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         val mSharePref = getSharedPreferences(SHARE_PREF_NAME, MODE_PRIVATE)
         val email = mSharePref.getString(SHARE_PREF_EMAIL,null)
         storageRef = FirebaseStorage.getInstance().reference.child("UserProfile")
+        viewModel = ViewModelProvider(this, viewModelFactory(email))[UsersViewModel::class.java]
+
+        viewModel.mUser.observe(this){user->
+//            Log.d("shubhamUser",user.toString())
+            if(user!=null){
+                Glide.with(this)
+                    .load(user.profilePic)
+                    .placeholder(R.drawable.profile)
+                    .into(binding.profilePic)
+                binding.userNameProfile.setText(user.name)
+                binding.Caption.setText(user.bio)
+
+                profilePic = user.profilePic
+            }
+        }
+
         binding.updateDp.setOnClickListener {
             val options = arrayOf<CharSequence>("Camera","Gallery","Remove Profile Pic")
             val builder = AlertDialog.Builder(this)
@@ -110,22 +122,22 @@ class ProfileSetUpActivity : AppCompatActivity() {
         Log.d("profileImageUri",mImageUri.toString())
 
         val call = api.setUpYourProfile(map)
-        call.enqueue(object : Callback<UsersModel>{
+        call.enqueue(object : Callback<UsersModel> {
             override fun onResponse(call: Call<UsersModel>, response: Response<UsersModel>) {
                 if(response.code()==200){
-                    val intent = Intent(this@ProfileSetUpActivity,MainActivity::class.java)
+                    val intent = Intent(this@ProfileUpdateActivity,MainActivity::class.java)
                     startActivity(intent)
                     finish()
                 } else if(response.code()==500){
-                    Toast.makeText(this@ProfileSetUpActivity,"Internal Problem",Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@ProfileUpdateActivity,"Internal Problem", Toast.LENGTH_LONG).show()
                 } else{
                     Log.d("unexpectedError",response.code().toString())
-                    Toast.makeText(this@ProfileSetUpActivity,"${response.code()}",Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@ProfileUpdateActivity,"${response.code()}", Toast.LENGTH_LONG).show()
                 }
             }
 
             override fun onFailure(call: Call<UsersModel>, t: Throwable) {
-                Toast.makeText(this@ProfileSetUpActivity,t.message,Toast.LENGTH_LONG).show()
+                Toast.makeText(this@ProfileUpdateActivity,t.message, Toast.LENGTH_LONG).show()
             }
         })
     }

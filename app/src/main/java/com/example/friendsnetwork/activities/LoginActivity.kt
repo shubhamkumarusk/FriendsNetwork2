@@ -82,6 +82,7 @@ class LoginActivity : AppCompatActivity() {
                     }
 
                     override fun onFailure(call: Call<UserLoginModel>, t: Throwable) {
+                        Log.d("error",t.message.toString())
                         showToast(t.message.toString())
                     }
 

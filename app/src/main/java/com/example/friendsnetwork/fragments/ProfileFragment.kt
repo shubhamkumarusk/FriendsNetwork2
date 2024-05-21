@@ -49,7 +49,7 @@ class ProfileFragment : Fragment(), onClick {
         observers(view)
 
         binding.profileEditButton.setOnClickListener {
-            findNavController().navigate(R.id.action_profileFragment_to_profileSetUpActivity)
+            findNavController().navigate(R.id.action_profileFragment_to_profileUpdateActivity)
         }
 
 

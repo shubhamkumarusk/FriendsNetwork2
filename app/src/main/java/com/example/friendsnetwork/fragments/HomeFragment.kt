@@ -77,34 +77,53 @@ class HomeFragment : Fragment(), onClickHandel {
         }
     }
 
-    override fun onLikeButtonClick(post: PostsModel){
-        val map = HashMap<String,String>()
+    override fun onLikeButtonClick(post: PostsModel) {
+        val currentLikes = post.likes?.toMutableList() ?: mutableListOf()
+
+        val hasLiked = currentLikes.contains(email)
+        if (hasLiked) {
+            currentLikes.remove(email)
+        } else {
+            currentLikes.add(email!!)
+        }
+
+        val updatedPost = post.copy(likes = currentLikes)
+        viewmodel.updatePost(updatedPost)
+        mAdapter.notifyDataSetChanged() // Immediate UI update
+
+        val map = HashMap<String, String>()
         map["email"] = email!!
-        api.likePost(post.postId,map).enqueue(object:Callback<String>{
-            override fun onResponse(call: Call<String>, response: Response<String>){
-                if(response.code()==200){
-                    val updatedLikes = post.likes?.toMutableList()
-                    updatedLikes?.add(email!!)
-                    val updatedPost = post.copy(likes = updatedLikes)
-                    viewmodel.updatePost(updatedPost)
+        api.likePost(post.postId, map).enqueue(object : Callback<String> {
+            override fun onResponse(call: Call<String>, response: Response<String>) {
+                if (response.code() == 200 || response.code() == 201) {
+                    // Backend updated successfully
+                    Log.d("Like/Dislike", response.body().toString())
+                } else {
+                    // Revert the like/unlike action if the backend fails
+                    if(hasLiked){
+                        currentLikes.add(email!!)
+                    } else {
+                        currentLikes.remove(email)
+                    }
+                    val revertedPost = post.copy(likes = currentLikes)
+                    viewmodel.updatePost(revertedPost)
                     mAdapter.notifyDataSetChanged()
-                    Log.d("Liked",response.body().toString())
-                }
-                else if(response.code()==201)
-                {
-                    val updatedLikes = post.likes?.toMutableList()
-                    updatedLikes?.remove(email!!)
-                    val updatedPost = post.copy(likes = updatedLikes)
-                    viewmodel.updatePost(updatedPost)
-                    mAdapter.notifyDataSetChanged()
-                    Log.d("DisLiked",response.body().toString())
+                    Log.d("Like/Dislike Error", response.code().toString())
                 }
             }
 
             override fun onFailure(call: Call<String>, t: Throwable) {
-                Log.d("Likederror",t.message.toString())
+                // Revert the like/unlike action if the backend fails
+                if(hasLiked){
+                    currentLikes.add(email!!)
+                } else {
+                    currentLikes.remove(email)
+                }
+                val revertedPost = post.copy(likes = currentLikes)
+                viewmodel.updatePost(revertedPost)
+                mAdapter.notifyDataSetChanged()
+                Log.d("Like/Dislike Failure", t.message.toString())
             }
-
         })
     }
 
@@ -131,7 +150,6 @@ class HomeFragment : Fragment(), onClickHandel {
             map["email"] = email!!
             map["text"] = comment
             api.addCommentToPost(post.postId,map).enqueue(object :Callback<CommentModel>{
-
                 override fun onResponse(
                     call: Call<CommentModel>,
                     response: Response<CommentModel>

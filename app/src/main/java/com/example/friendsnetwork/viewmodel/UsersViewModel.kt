@@ -45,6 +45,9 @@ class UsersViewModel(private val mEmail:String?):ViewModel(){
                         callback(it)
                     }
                 }
+                else if(response.code()==404){
+                    callback(null)
+                }
                 else{
                     callback(null)
                     Log.d("viewmodelUser","chud gya")

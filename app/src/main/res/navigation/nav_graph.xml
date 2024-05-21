@@ -41,28 +41,28 @@
             app:popUpTo="@id/loginActivity"
             app:popUpToInclusive="true" />
         <action
-            android:id="@+id/action_profileFragment_to_profileSetUpActivity"
-            app:destination="@id/profileSetUpActivity"
-            app:launchSingleTop="true"
-            app:popUpTo="@id/profileSetUpActivity"
-            app:popUpToInclusive="true" />
-        <action
             android:id="@+id/action_profileFragment_to_personalFeedFragment"
             app:destination="@id/personalFeedFragment" />
+        <action
+            android:id="@+id/action_profileFragment_to_profileUpdateActivity"
+            app:destination="@id/profileUpdateActivity"
+            app:launchSingleTop="true"
+            app:popUpTo="@id/profileUpdateActivity"
+            app:popUpToInclusive="true" />
     </fragment>
     <activity
         android:id="@+id/loginActivity"
         android:name="com.example.friendsnetwork.activities.LoginActivity"
         android:label="activity_login"
         tools:layout="@layout/activity_login" />
-    <activity
-        android:id="@+id/profileSetUpActivity"
-        android:name="com.example.friendsnetwork.activities.ProfileSetUpActivity"
-        android:label="activity_profile_set_up"
-        tools:layout="@layout/activity_profile_set_up" />
     <fragment
         android:id="@+id/personalFeedFragment"
         android:name="com.example.friendsnetwork.fragments.PersonalFeedFragment"
         android:label="fragment_personal_feed"
         tools:layout="@layout/fragment_personal_feed" />
+    <activity
+        android:id="@+id/profileUpdateActivity"
+        android:name="com.example.friendsnetwork.activities.ProfileUpdateActivity"
+        android:label="activity_profile_update"
+        tools:layout="@layout/activity_profile_update" />
 </navigation>

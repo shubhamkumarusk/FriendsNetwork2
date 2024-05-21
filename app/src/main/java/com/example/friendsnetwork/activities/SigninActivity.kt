@@ -3,6 +3,7 @@ package com.example.friendsnetwork.activities
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModelProvider
 import com.example.friendsnetwork.SHARE_PREF_EMAIL
@@ -66,6 +67,7 @@ class SigninActivity : AppCompatActivity() {
 
 
                     override fun onFailure(call: Call<Void>, t: Throwable) {
+                        Log.d("error",t.message.toString())
                         Toast.makeText(this@SigninActivity,"Error: ${t.message}",Toast.LENGTH_LONG).show()
 
                     }
